@@ -1,0 +1,1 @@
+./register-gov.csv https://raw.githubusercontent.com/cisagov/dotgov-data/main/current-full.csv
