@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 import dns
 import dns.resolver
 import csv
@@ -102,10 +104,9 @@ def main():
         input_data = [row for row in reader]
 
     print(f"Querying {record_type} Records of Domains in {input_file}...")
+    results, failures = run_queries(input_data,domain_col,record_type,handler)
+
     with open(output_file, 'w', newline='') as csvfile:
-
-        results, failures = run_queries(input_data,domain_col,record_type,handler)
-
         if len(results) == 0:
             return
 
