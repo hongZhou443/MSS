@@ -13,6 +13,9 @@ GEOLITE_COUNTRY_DB = "./data/geolite2/GeoLite2-Country_20240220/GeoLite2-Country
 GEOLITE_CITY_DB = "./data/geolite2/GeoLite2-City_20240220/GeoLite2-City.mmdb"
 GEOLITE_ASN_DB = "./data/geolite2/GeoLite2-ASN_20240220/GeoLite2-ASN.mmdb"
 
+LAT_COL = "latitude"
+LON_COL = "longitude"
+
 def geolocate_ip(ip, client):
     response = client.city(ip)
     row = {}
@@ -22,8 +25,8 @@ def geolocate_ip(ip, client):
     row["country_iso_code"] = response.country.iso_code
     row["most_specific_name"] = response.subdivisions.most_specific.name
     row["most_specific_iso_code"] = response.subdivisions.most_specific.iso_code
-    row["latitude"] = response.location.latitude
-    row["longitude"] = response.location.longitude
+    row[LAT_COL] = response.location.latitude
+    row[LON_COL] = response.location.longitude
     row["postal"] = response.postal.code
     row["network"] = str(response.traits.network)
     return row
@@ -58,20 +61,10 @@ def geolocate(ips):
 
     return geo_data
 
-def main():
-    parser = ap.ArgumentParser()
-    parser.add_argument("input_file", metavar="[IN]", type=str, help="Input CSV File")
-    parser.add_argument("-o", "--output-file", metavar="[OUT]", type=str, default="out.csv", help="Output CSV File")
-    parser.add_argument("-i", "--ip-column", metavar="[COLUMN_NAME]", type=str, default="ipv4", help="CSV Column Containing IP Addresses")
-    parser.add_argument("-v", "--verbose", action='store_true', help="Verbose Output")
+def run(input_file, output_file, ip_col, verbose):
 
-    args = parser.parse_args()
-
-    input_file = args.input_file
-    output_file = args.output_file
-    ip_col = args.ip_column
     global VERBOSE
-    VERBOSE = args.verbose
+    VERBOSE = verbose
 
     print(f"Reading Input from File: {input_file}")
     print(f"Writing Output to File: {output_file}")
@@ -91,6 +84,24 @@ def main():
         csv_writer.writeheader()
         for row in geo_data:
             csv_writer.writerow(row)
+
+
+
+def main():
+    parser = ap.ArgumentParser()
+    parser.add_argument("input_file", metavar="[IN]", type=str, help="Input CSV File")
+    parser.add_argument("-o", "--output-file", metavar="[OUT]", type=str, default="out.csv", help="Output CSV File")
+    parser.add_argument("-i", "--ip-column", metavar="[COLUMN_NAME]", type=str, default="ipv4", help="CSV Column Containing IP Addresses")
+    parser.add_argument("-v", "--verbose", action='store_true', help="Verbose Output")
+
+    args = parser.parse_args()
+
+    input_file = args.input_file
+    output_file = args.output_file
+    ip_col = args.ip_column
+    verbose = args.verbose
+
+    run(input_file, output_file, ip_col, verbose)
 
 if __name__ == "__main__":
     main()

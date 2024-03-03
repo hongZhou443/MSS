@@ -2,7 +2,9 @@
 PYTHON:=python3
 PDFLATEX:=pdflatex
 
+SCRIPTS_DIR:=./scripts
 DATA_DIR=./data
+
 GOV_CSV=$(DATA_DIR)/registry-gov.csv
 UK_CSV=$(DATA_DIR)/List_of_gov.uk_domains_as_of_30_March_2023.csv
 

@@ -8,10 +8,13 @@ import rich.progress as rprog
 
 VERBOSE = False
 
+MX_URL_COL = "url"
+MX_EXCHANGE_COL = "exchange"
+
 def mx_handler(url, rr, prog):
     data = {}
-    data["url"] = url
-    data["exchange"] = rr.exchange
+    data[MX_URL_COL] = url
+    data[MX_EXCHANGE_COL] = rr.exchange
     data["preference"] = rr.preference
     data["class"] = dns.rdataclass.to_text(rr.rdclass)
     data["type"] = dns.rdatatype.to_text(rr.rdtype)
@@ -23,10 +26,13 @@ def txt_handler(url, rr, prg):
     data["strings"] = str(rr.strings)
     return data
 
+A_URL_COL = "url"
+A_IP_COL = "ipv4"
+
 def a_handler(url, rr, prg):
     data = {}
-    data["url"] = url
-    data["ipv4"] = rr.to_text()
+    data[A_URL_COL] = url
+    data[A_IP_COL] = rr.to_text()
     return data
 
 def run_queries(input_data, dom_col, record_type, handler):
@@ -73,23 +79,10 @@ handlers = {
     "A" : a_handler
     }
 
-def main():
-    parser = ap.ArgumentParser(description="run DNS record lookups on a set of input domains")
+def run(input_file, output_file, record_type, domain_col, verbose):
 
-    parser.add_argument("input_file", metavar="[IN]", type=str, help="Input CSV File")
-    parser.add_argument("-o", "--output-file", metavar="[OUT]", type=str, default="out.csv", help="Output CSV File")
-    parser.add_argument("-r", "--record-type", metavar="[RECORD_TYPE]", type=str, default="MX", help="DNS Record Type to Query")
-    parser.add_argument("-d", "--domain-column", metavar="[COLUMN_NAME]", type=str, default="Domain", help="CSV Column Containing Domains")
-    parser.add_argument("-v", "--verbose", action='store_true', help="Verbose Output")
-
-    args = parser.parse_args()
-
-    input_file = args.input_file
-    output_file = args.output_file
-    record_type = args.record_type
-    domain_col = args.domain_column
     global VERBOSE
-    VERBOSE = args.verbose
+    VERBOSE = verbose
 
     if not record_type in handlers.keys():
         print(f"Could not find handler for Record Type: {record_type}!")
@@ -115,6 +108,26 @@ def main():
         csv_writer.writeheader()
         for result in results:
             csv_writer.writerow(result)
+
+
+def main():
+    parser = ap.ArgumentParser(description="run DNS record lookups on a set of input domains")
+
+    parser.add_argument("input_file", metavar="[IN]", type=str, help="Input CSV File")
+    parser.add_argument("-o", "--output-file", metavar="[OUT]", type=str, default="out.csv", help="Output CSV File")
+    parser.add_argument("-r", "--record-type", metavar="[RECORD_TYPE]", type=str, default="MX", help="DNS Record Type to Query")
+    parser.add_argument("-d", "--domain-column", metavar="[COLUMN_NAME]", type=str, default="Domain", help="CSV Column Containing Domains")
+    parser.add_argument("-v", "--verbose", action='store_true', help="Verbose Output")
+
+    args = parser.parse_args()
+
+    input_file = args.input_file
+    output_file = args.output_file
+    record_type = args.record_type
+    domain_col = args.domain_column
+    verbose = args.verbose
+
+    run(input_file, output_file, record_type, domain_col, verbose)
 
 if __name__ == "__main__":
     main()

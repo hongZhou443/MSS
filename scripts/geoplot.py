@@ -7,6 +7,27 @@ from geopandas import GeoDataFrame
 import argparse as ap
 import csv
 
+def run(input_file, output_file, lat_col, lon_col, static, verbose):
+    global VERBOSE
+    VERBOSE = verbose
+
+    df = pd.read_csv(input_file, delimiter=',', skiprows=0, low_memory=False)
+    print(df[lat_col])
+    print(df[lon_col])
+    
+    geometry = [Point(xy) for xy in zip(df[lon_col], df[lat_col])]
+    gdf = GeoDataFrame(df, geometry=geometry)   
+   
+    if static:
+        import matplotlib.pyplot as plt
+        world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+        gdf.plot(ax=world.plot(figsize=(10, 6)), marker='o', color='red', markersize=15);
+        plt.savefig(output_file)
+    else:
+        import folium as fl
+        pass
+
+
 def main():
     parser = ap.ArgumentParser()
     parser.add_argument("input_file", metavar="[IN]", type=str, help="Input CSV File")
@@ -22,25 +43,11 @@ def main():
     output_file = args.output_file
     lat_col = args.latitude_column
     lon_col = args.longitude_column
-    global VERBOSE
-    VERBOSE = args.verbose
+    static = args.static
+    verbose = args.verbose
 
-    df = pd.read_csv(input_file, delimiter=',', skiprows=0, low_memory=False)
-    print(df[lat_col])
-    print(df[lon_col])
-    
-    geometry = [Point(xy) for xy in zip(df[lon_col], df[lat_col])]
-    gdf = GeoDataFrame(df, geometry=geometry)   
+    run(input_file, output_file, lat_col, lon_col, static, verbose)
    
-    if args.static:
-        import matplotlib.pyplot as plt
-        world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-        gdf.plot(ax=world.plot(figsize=(10, 6)), marker='o', color='red', markersize=15);
-        plt.savefig(output_file)
-    else:
-        import folium as fl
-
-        
 if __name__ == "__main__":
     main()
 
