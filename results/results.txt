@@ -1,0 +1,14 @@
+Unique .gov domains:  7391
+Unique Mailserver domains:  7471
+Unique Mailserver IPs:  2282
+Unique Mailserver locations:  524
+Locations in US:  504
+
+Total IPs:  522
+Top 3: 169, 79, 41
+Number of locations with greater than 5 IPs:  22
+Number of locations with 5 IPs:  4
+Number of locations with 4 IPs:  6
+Number of locations with 3 IPs:  31
+Number of locations with 2 IPs:  100
+Number of locations with 1 IP:  359

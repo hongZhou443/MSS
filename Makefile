@@ -23,10 +23,8 @@ uk_mx:
 	@mv $(DATA_DIR)/gov_uk_mx_results.csv.tmp $(DATA_DIR)/gov_uk_mx_results.csv
 
 uk_mailserver_a:
-	@$(PYTHON) ./record_lookup.py $(DATA_DIR)/gov_mx_results.csv -r A -d "exchange" -o $(DATA_DIR)/gov_mailserver_a_results.csv.tmp
-	@mv $(DATA_DIR)/gov_mailserver_a_results.csv.tmp $(DATA_DIR)/gov_mailserver_a_results.csv
-
-
+	@$(PYTHON) ./record_lookup.py $(DATA_DIR)/gov_uk_mx_results.csv -r A -d "exchange" -o $(DATA_DIR)/gov_uk_mailserver_a_results.csv.tmp
+	@mv $(DATA_DIR)/gov_uk_mailserver_a_results.csv.tmp $(DATA_DIR)/gov_uk_mailserver_a_results.csv
 	
 paper:
 	@$(PDFLATEX) ./paper.tex
