@@ -24,7 +24,7 @@ us_geolite:
 
 us:
 	@mkdir -p $(OUTPUT_DIR)/US
-	@$(PYTHON) $(SCRIPTS_DIR)/driver.py $(US_CSV) -d "Domain name" -o $(OUTPUT_DIR)/US -i -a "$(IPINFO_ACCESS_TOKEN)"
+	@$(PYTHON) $(SCRIPTS_DIR)/driver.py $(US_CSV) -d "Domain name" -o $(OUTPUT_DIR)/US -i -a "$(IPINFO_ACCESS_TOKEN)" | tee $(OUTPUT_DIR)/US/output.txt
 
 
 us-city:

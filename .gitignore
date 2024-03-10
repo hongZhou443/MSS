@@ -4,3 +4,4 @@
 *.tmp
 .venv
 personal_config.mk
+venv

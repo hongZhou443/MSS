@@ -1,0 +1,100 @@
+Summary Info:
+	# Domains:  9850
+	# Domains with at least 1 mailserver:  7400
+	# Unqiue Exchange Domains:  7477
+	# Exchanges whose A record lookup failed:  206
+	# Unique Locations (which had at least a country code):  514
+	# US Locations:  495
+	# Foreign Locations:  19
+	# Domains Using Exchange with Anycast IP:  254
+	# Unqiue Exchange ASN's:  449
+Type:  City
+	# Domains:  4905
+	# Domains with at least 1 mailserver:  4310
+	# Unqiue Exchange Domains:  4515
+	# Exchanges whose A record lookup failed:  94
+	# Unique Locations (which had at least a country code):  308
+	# US Locations:  292
+	# Foreign Locations:  16
+	# Domains Using Exchange with Anycast IP:  137
+	# Unqiue Exchange ASN's:  273
+Type:  County
+	# Domains:  1772
+	# Domains with at least 1 mailserver:  1426
+	# Unqiue Exchange Domains:  1614
+	# Exchanges whose A record lookup failed:  40
+	# Unique Locations (which had at least a country code):  171
+	# US Locations:  164
+	# Foreign Locations:  7
+	# Domains Using Exchange with Anycast IP:  63
+	# Unqiue Exchange ASN's:  164
+Type:  Federal - Executive
+	# Domains:  1205
+	# Domains with at least 1 mailserver:  566
+	# Unqiue Exchange Domains:  472
+	# Exchanges whose A record lookup failed:  28
+	# Unique Locations (which had at least a country code):  76
+	# US Locations:  71
+	# Foreign Locations:  5
+	# Domains Using Exchange with Anycast IP:  3
+	# Unqiue Exchange ASN's:  77
+Type:  Federal - Judicial
+	# Domains:  24
+	# Domains with at least 1 mailserver:  11
+	# Unqiue Exchange Domains:  19
+	# Exchanges whose A record lookup failed:  1
+	# Unique Locations (which had at least a country code):  10
+	# US Locations:  8
+	# Foreign Locations:  2
+	# Domains Using Exchange with Anycast IP:  0
+	# Unqiue Exchange ASN's:  7
+Type:  Federal - Legislative
+	# Domains:  120
+	# Domains with at least 1 mailserver:  46
+	# Unqiue Exchange Domains:  51
+	# Exchanges whose A record lookup failed:  6
+	# Unique Locations (which had at least a country code):  16
+	# US Locations:  14
+	# Foreign Locations:  2
+	# Domains Using Exchange with Anycast IP:  0
+	# Unqiue Exchange ASN's:  10
+Type:  Interstate
+	# Domains:  34
+	# Domains with at least 1 mailserver:  27
+	# Unqiue Exchange Domains:  43
+	# Exchanges whose A record lookup failed:  2
+	# Unique Locations (which had at least a country code):  20
+	# US Locations:  18
+	# Foreign Locations:  2
+	# Domains Using Exchange with Anycast IP:  0
+	# Unqiue Exchange ASN's:  14
+Type:  Special district
+	# Domains:  328
+	# Domains with at least 1 mailserver:  229
+	# Unqiue Exchange Domains:  262
+	# Exchanges whose A record lookup failed:  9
+	# Unique Locations (which had at least a country code):  48
+	# US Locations:  44
+	# Foreign Locations:  4
+	# Domains Using Exchange with Anycast IP:  16
+	# Unqiue Exchange ASN's:  46
+Type:  State or territory
+	# Domains:  1225
+	# Domains with at least 1 mailserver:  581
+	# Unqiue Exchange Domains:  581
+	# Exchanges whose A record lookup failed:  45
+	# Unique Locations (which had at least a country code):  90
+	# US Locations:  80
+	# Foreign Locations:  10
+	# Domains Using Exchange with Anycast IP:  35
+	# Unqiue Exchange ASN's:  75
+Type:  Tribal
+	# Domains:  237
+	# Domains with at least 1 mailserver:  204
+	# Unqiue Exchange Domains:  267
+	# Exchanges whose A record lookup failed:  16
+	# Unique Locations (which had at least a country code):  60
+	# US Locations:  57
+	# Foreign Locations:  3
+	# Domains Using Exchange with Anycast IP:  0
+	# Unqiue Exchange ASN's:  54

@@ -4,6 +4,7 @@ import asyncio
 
 import os
 from record_lookup import run_record_lookup
+from map_ip_to_asn import add_asns
 import geolocation
 import analysis
 
@@ -44,30 +45,36 @@ async def main():
     df = pd.read_csv(input_file)
     df = df.rename(columns={domain_col : "domain"})
 
+    redid_data = False
+
     if not force and os.path.isfile(output_dir + MX_RECORD_CSV):
         mx_record_df = pd.read_csv(output_dir + MX_RECORD_CSV)
     else:
         mx_record_df = await run_record_lookup(df.set_index("domain"), "MX")
         mx_record_df.to_csv(output_dir + MX_RECORD_CSV)
+        redid_data = True
 
     if not force and os.path.isfile(output_dir + A_RECORD_CSV):
         a_record_df = pd.read_csv(output_dir + A_RECORD_CSV)
     else:
         a_record_df = await run_record_lookup(mx_record_df.set_index("exchange"), "A")
+        a_record_df = await add_asns(a_record_df, "a_record")
         a_record_df.to_csv(output_dir + A_RECORD_CSV)
+        redid_data = True
 
     if not force and os.path.isfile(output_dir + geo_csv):
         geo_df = pd.read_csv(output_dir + geo_csv)
     else:
         geo_df = await run_geolocation(a_record_df, "a_record")
         geo_df.to_csv(output_dir + geo_csv)
+        redid_data = True
 
     df = df.add_prefix("gov_")
     mx_record_df = mx_record_df.add_prefix("mx_")
     a_record_df = a_record_df.add_prefix("a_")
     geo_df = geo_df.add_prefix("geo_")
 
-    analysis.run_analysis(df, mx_record_df, a_record_df, geo_df, output_dir)
+    analysis.run_analysis(df, mx_record_df, a_record_df, geo_df, output_dir, redid_data)
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
