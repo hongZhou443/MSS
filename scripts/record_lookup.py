@@ -1,46 +1,60 @@
 #! /usr/bin/python3
 
+import asyncio
 import dns
 import dns.resolver
-import csv
-import argparse as ap
+import dns.asyncresolver
+
+import pandas as pd
+
 import rich.progress as rprog
 
-VERBOSE = False
+def mx_handler(rr):
+    return {
+            "exchange" : rr.exchange,
+            "preference" : rr.preference,
+            "class" : dns.rdataclass.to_text(rr.rdclass),
+            "type" : dns.rdatatype.to_text(rr.rdtype)
+            }
 
-MX_URL_COL = "url"
-MX_EXCHANGE_COL = "exchange"
+def txt_handler(rr):
+    return { "strings" : str(rr.strings) }
 
-def mx_handler(url, rr, prog):
-    data = {}
-    data[MX_URL_COL] = url
-    data[MX_EXCHANGE_COL] = rr.exchange
-    data["preference"] = rr.preference
-    data["class"] = dns.rdataclass.to_text(rr.rdclass)
-    data["type"] = dns.rdatatype.to_text(rr.rdtype)
-    return data
+def a_handler(rr):
+    return {"a_record" : rr.to_text()}
 
-def txt_handler(url, rr, prg):
-    data = {}
-    data["url"] = url
-    data["strings"] = str(rr.strings)
-    return data
+NUM_QUERIES_AT_ONCE = 16
+QUERY_SEM = asyncio.Semaphore(NUM_QUERIES_AT_ONCE)
 
-A_URL_COL = "url"
-A_IP_COL = "ipv4"
+async def run_query(domain, record_type, progress, sent_task, success_task, fail_task):
+    async with QUERY_SEM:
+        MAX_ATTEMPTS = 1
+        attempts = 0
+        progress.advance(sent_task)
+        while attempts < MAX_ATTEMPTS:
+             try:
+                 result = await dns.asyncresolver.resolve(domain, record_type, raise_on_no_answer=False)
+                 progress.advance(success_task)
+                 return result
+             except (dns.resolver.NoNameservers,
+                     dns.resolver.NoAnswer,
+                     dns.resolver.LifetimeTimeout):
+                 progress.advance(fail_task)
+                 return None
+             except:
+                 attempts += 1
+                 continue
+        progress.advance(fail_task)
+        return None
 
-def a_handler(url, rr, prg):
-    data = {}
-    data[A_URL_COL] = url
-    data[A_IP_COL] = rr.to_text()
-    return data
-
-def run_queries(input_data, dom_col, record_type, handler):
+async def run_queries(df, record_type, handler):
     results = []
     failures = []
 
     percent_displayed = 0
     num_queried = 0
+
+    df = df[~df.index.duplicated(keep='first')]
 
     with rprog.Progress(
                 rprog.TextColumn("[progress.description]{task.description}"),
@@ -48,30 +62,31 @@ def run_queries(input_data, dom_col, record_type, handler):
                 rprog.TaskProgressColumn(),
                 rprog.MofNCompleteColumn()
             ) as progress:
-        query_task = progress.add_task("[cyan]Running Queries...", total=len(input_data))
-        success_task = progress.add_task("[green]Responses ", total=len(input_data))
-        fail_task = progress.add_task("[red]Failures ", total=len(input_data))
+        query_task = progress.add_task("[cyan]Running Queries...", total=len(df.index))
+        success_task = progress.add_task("[green]Responses ", total=len(df.index))
+        fail_task = progress.add_task("[red]Failures ", total=len(df.index))
 
-        for row in input_data:
-            url = row[dom_col]
-            try:
-                if VERBOSE:
-                    progress.console.print(f"Querying \"{url}\"...")
-                query_results = dns.resolver.resolve(url, record_type)
-                if VERBOSE:
-                    progress.console.print(f"[green][SUCCESS] \"{url}\"...")
-                progress.advance(success_task)
-                for rr in query_results:
-                    results.append(handler(url, rr, progress))
-            except:
-                if VERBOSE:
-                    progress.console.print(f"[red][FAILED] \"{url}\"")
-                progress.advance(fail_task)
-                failures.append(row)
+        domains = []
+        coroutines = []
 
-            progress.advance(query_task)
+        for index, row in df.iterrows():
+            domain = index
+            coroutines.append(run_query(domain, record_type, progress, query_task, success_task, fail_task))
+            domains.append(domain)
 
-    return (results,failures)
+        query_results_list = await asyncio.gather(*coroutines)
+
+        rdicts = []
+        for query_result, domain in zip(query_results_list, domains):
+            if query_result == None:
+                continue
+            for rr in query_result:
+                rdict = handler(rr)
+                rdict['queried'] = domain
+                rdicts.append(rdict)
+
+    rdf = pd.DataFrame.from_dict(rdicts)
+    return rdf.set_index('queried')
 
 handlers = {
     "MX" : mx_handler,
@@ -79,55 +94,15 @@ handlers = {
     "A" : a_handler
     }
 
-def run(input_file, output_file, record_type, domain_col, verbose):
-
-    global VERBOSE
-    VERBOSE = verbose
+async def run_record_lookup(df, record_type):
 
     if not record_type in handlers.keys():
         print(f"Could not find handler for Record Type: {record_type}!")
         return
-
     handler = handlers[record_type]
 
-    print(f"Reading Input from File: {input_file}")
-    print(f"Writing Output to File: {output_file}")
+    print(f"Querying {record_type} Records...")
 
-    with open(input_file, 'r') as csvfile:
-        reader = csv.DictReader(csvfile)
-        input_data = [row for row in reader]
+    rdf = await run_queries(df,record_type,handler)
 
-    print(f"Querying {record_type} Records of Domains in {input_file}...")
-    results, failures = run_queries(input_data,domain_col,record_type,handler)
-
-    with open(output_file, 'w', newline='') as csvfile:
-        if len(results) == 0:
-            return
-
-        csv_writer = csv.DictWriter(csvfile, fieldnames=list(results[0].keys()))
-        csv_writer.writeheader()
-        for result in results:
-            csv_writer.writerow(result)
-
-
-def main():
-    parser = ap.ArgumentParser(description="run DNS record lookups on a set of input domains")
-
-    parser.add_argument("input_file", metavar="[IN]", type=str, help="Input CSV File")
-    parser.add_argument("-o", "--output-file", metavar="[OUT]", type=str, default="out.csv", help="Output CSV File")
-    parser.add_argument("-r", "--record-type", metavar="[RECORD_TYPE]", type=str, default="MX", help="DNS Record Type to Query")
-    parser.add_argument("-d", "--domain-column", metavar="[COLUMN_NAME]", type=str, default="Domain", help="CSV Column Containing Domains")
-    parser.add_argument("-v", "--verbose", action='store_true', help="Verbose Output")
-
-    args = parser.parse_args()
-
-    input_file = args.input_file
-    output_file = args.output_file
-    record_type = args.record_type
-    domain_col = args.domain_column
-    verbose = args.verbose
-
-    run(input_file, output_file, record_type, domain_col, verbose)
-
-if __name__ == "__main__":
-    main()
+    return rdf

@@ -1,41 +1,36 @@
 #! /usr/bin/python3
 
 import os
-import geoip2.database as geodb
 import argparse as ap
-import csv
+
+import asyncio
+
+import pandas as pd
 import rich.progress as rprog
 
 VERBOSE = False
-MAXMIND_USER_ID = ""
-MAXMIND_KEY = ""
 GEOLITE_COUNTRY_DB = "./data/geolite2/GeoLite2-Country_20240220/GeoLite2-Country.mmdb"
 GEOLITE_CITY_DB = "./data/geolite2/GeoLite2-City_20240220/GeoLite2-City.mmdb"
 GEOLITE_ASN_DB = "./data/geolite2/GeoLite2-ASN_20240220/GeoLite2-ASN.mmdb"
 
-LAT_COL = "latitude"
-LON_COL = "longitude"
-
-def geolocate_ip(ip, client):
+def geolite_geolocate_ip(ip, client):
     response = client.city(ip)
-    row = {}
-    row["ip"] = ip
-    row["city_name"] = response.city.name
-    row["country_name"] = response.country.name
-    row["country_iso_code"] = response.country.iso_code
-    row["most_specific_name"] = response.subdivisions.most_specific.name
-    row["most_specific_iso_code"] = response.subdivisions.most_specific.iso_code
-    row[LAT_COL] = response.location.latitude
-    row[LON_COL] = response.location.longitude
-    row["postal"] = response.postal.code
-    row["network"] = str(response.traits.network)
-    return row
+    return {
+        "ip" : ip,
+        "city_name" : response.city.name,
+        "country_name" : response.country.name,
+        "country_iso_code" : response.country.iso_code,
+        "most_specific_name" : response.subdivisions.most_specific.name,
+        "most_specific_iso_code" : response.subdivisions.most_specific.iso_code,
+        "longitude" : response.location.latitude,
+        "latitude" : response.location.longitude,
+        "postal" : response.postal.code,
+        "network" : str(response.traits.network)
+    }
 
-def geolocate(ips):
+def geolite_geolocate(ips):
+    import geoip2.database as geodb
     geo_data = []
-
-    MAXMIND_USER_ID = os.environ['MAXMIND_USER_ID']
-    MAXMIND_KEY = os.environ['MAXMIND_KEY']
 
     with rprog.Progress(
                 rprog.TextColumn("[progress.description]{task.description}"),
@@ -51,7 +46,7 @@ def geolocate(ips):
         with geodb.Reader(GEOLITE_CITY_DB) as client:
             for ip in ips:
                 try:
-                    row = geolocate_ip(ip, client)
+                    row = geolite_geolocate_ip(ip, client)
                     progress.advance(success_task)
                     geo_data.append(row)
                 except:
@@ -59,50 +54,59 @@ def geolocate(ips):
 
                 progress.advance(query_task)
 
-    return geo_data
+    geo_df = pd.DataFrame(geo_data)
+    return geo_df
 
-def run(input_file, output_file, ip_col, verbose):
+IPINFO_SEM = asyncio.Semaphore(128)
+async def ipinfo_geolocate_ip(ip, handler, progress, query_task, success_task, fail_task):
+    async with IPINFO_SEM:
+        progress.advance(query_task)
+        try:
+            details = await handler.getDetails(ip)
+            progress.advance(success_task)
+        except:
+            progress.advance(fail_task)
+            return None
+        df = pd.json_normalize(details.all, sep='_')
+        return df.to_dict(orient="records")[0]
 
-    global VERBOSE
-    VERBOSE = verbose
+IPFINO_ACCESS_TOKEN = None
 
-    print(f"Reading Input from File: {input_file}")
-    print(f"Writing Output to File: {output_file}")
+async def ipinfo_geolocate(ips):
+    import ipinfo
 
-    with open(input_file, 'r') as csvfile:
-        reader = csv.DictReader(csvfile)
-        input_data = [row for row in reader]
+    handler = ipinfo.getHandlerAsync(IPINFO_ACCESS_TOKEN)
+    geo_data = []
 
-    ips = [row[ip_col] for row in input_data]
+    with rprog.Progress(
+                rprog.TextColumn("[progress.description]{task.description}"),
+                rprog.BarColumn(),
+                rprog.TaskProgressColumn(),
+                rprog.MofNCompleteColumn() 
+            ) as progress:
 
-    geo_data = geolocate(ips)
+        query_task = progress.add_task("[cyan]Running Queries...", total=len(ips))
+        success_task = progress.add_task("[green]Responses ", total=len(ips))
+        fail_task = progress.add_task("[red]Failures ", total=len(ips))
 
-    with open(output_file, 'w') as output_csvfile:
-        if len(geo_data) == 0:
-            return
-        csv_writer = csv.DictWriter(output_csvfile, fieldnames=list(geo_data[0].keys()))
-        csv_writer.writeheader()
-        for row in geo_data:
-            csv_writer.writerow(row)
+        coroutines = []
 
+        for ip in ips:
+            coroutines.append(ipinfo_geolocate_ip(ip, handler, progress, query_task, success_task, fail_task))
 
+        geo_data = await asyncio.gather(*coroutines)
+        geo_data = [x for x in geo_data if x is not None]
 
-def main():
-    parser = ap.ArgumentParser()
-    parser.add_argument("input_file", metavar="[IN]", type=str, help="Input CSV File")
-    parser.add_argument("-o", "--output-file", metavar="[OUT]", type=str, default="out.csv", help="Output CSV File")
-    parser.add_argument("-i", "--ip-column", metavar="[COLUMN_NAME]", type=str, default="ipv4", help="CSV Column Containing IP Addresses")
-    parser.add_argument("-v", "--verbose", action='store_true', help="Verbose Output")
+    geo_df = pd.DataFrame(geo_data)
+    return geo_df
 
-    args = parser.parse_args()
+async def ipinfo_geolocation(df, ip_col):
+    ips = df[ip_col]
+    ips = ips.drop_duplicates()
+    return await ipinfo_geolocate(ips)
 
-    input_file = args.input_file
-    output_file = args.output_file
-    ip_col = args.ip_column
-    verbose = args.verbose
-
-    run(input_file, output_file, ip_col, verbose)
-
-if __name__ == "__main__":
-    main()
+async def geolite_geolocation(df, ip_col):
+    ips = df[ip_col]
+    ips = ips.drop_duplicates()
+    return geolite_geolocate(ips)
 
