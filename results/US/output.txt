@@ -7,7 +7,9 @@ Summary Info:
 	# US Locations:  495
 	# Foreign Locations:  19
 	# Domains Using Exchange with Anycast IP:  254
-	# Unqiue Exchange ASN's:  449
+	# Unique Exchange ASN's:  449
+	# Detected Third Party Mail Servers:  27332
+	% Detected Third Party Mail Servers:  81.89608677413555 %
 Type:  City
 	# Domains:  4905
 	# Domains with at least 1 mailserver:  4310
@@ -17,7 +19,9 @@ Type:  City
 	# US Locations:  292
 	# Foreign Locations:  16
 	# Domains Using Exchange with Anycast IP:  137
-	# Unqiue Exchange ASN's:  273
+	# Unique Exchange ASN's:  273
+	# Detected Third Party Mail Servers:  17083
+	% Detected Third Party Mail Servers:  85.83559441262184 %
 Type:  County
 	# Domains:  1772
 	# Domains with at least 1 mailserver:  1426
@@ -27,7 +31,9 @@ Type:  County
 	# US Locations:  164
 	# Foreign Locations:  7
 	# Domains Using Exchange with Anycast IP:  63
-	# Unqiue Exchange ASN's:  164
+	# Unique Exchange ASN's:  164
+	# Detected Third Party Mail Servers:  5319
+	% Detected Third Party Mail Servers:  81.04525369495657 %
 Type:  Federal - Executive
 	# Domains:  1205
 	# Domains with at least 1 mailserver:  566
@@ -37,7 +43,9 @@ Type:  Federal - Executive
 	# US Locations:  71
 	# Foreign Locations:  5
 	# Domains Using Exchange with Anycast IP:  3
-	# Unqiue Exchange ASN's:  77
+	# Unique Exchange ASN's:  77
+	# Detected Third Party Mail Servers:  1245
+	% Detected Third Party Mail Servers:  53.82619974059663 %
 Type:  Federal - Judicial
 	# Domains:  24
 	# Domains with at least 1 mailserver:  11
@@ -47,7 +55,9 @@ Type:  Federal - Judicial
 	# US Locations:  8
 	# Foreign Locations:  2
 	# Domains Using Exchange with Anycast IP:  0
-	# Unqiue Exchange ASN's:  7
+	# Unique Exchange ASN's:  7
+	# Detected Third Party Mail Servers:  17
+	% Detected Third Party Mail Servers:  50.0 %
 Type:  Federal - Legislative
 	# Domains:  120
 	# Domains with at least 1 mailserver:  46
@@ -57,7 +67,9 @@ Type:  Federal - Legislative
 	# US Locations:  14
 	# Foreign Locations:  2
 	# Domains Using Exchange with Anycast IP:  0
-	# Unqiue Exchange ASN's:  10
+	# Unique Exchange ASN's:  10
+	# Detected Third Party Mail Servers:  51
+	% Detected Third Party Mail Servers:  31.874999999999996 %
 Type:  Interstate
 	# Domains:  34
 	# Domains with at least 1 mailserver:  27
@@ -67,7 +79,9 @@ Type:  Interstate
 	# US Locations:  18
 	# Foreign Locations:  2
 	# Domains Using Exchange with Anycast IP:  0
-	# Unqiue Exchange ASN's:  14
+	# Unique Exchange ASN's:  14
+	# Detected Third Party Mail Servers:  96
+	% Detected Third Party Mail Servers:  74.4186046511628 %
 Type:  Special district
 	# Domains:  328
 	# Domains with at least 1 mailserver:  229
@@ -77,7 +91,9 @@ Type:  Special district
 	# US Locations:  44
 	# Foreign Locations:  4
 	# Domains Using Exchange with Anycast IP:  16
-	# Unqiue Exchange ASN's:  46
+	# Unique Exchange ASN's:  46
+	# Detected Third Party Mail Servers:  897
+	% Detected Third Party Mail Servers:  85.51000953288846 %
 Type:  State or territory
 	# Domains:  1225
 	# Domains with at least 1 mailserver:  581
@@ -87,7 +103,9 @@ Type:  State or territory
 	# US Locations:  80
 	# Foreign Locations:  10
 	# Domains Using Exchange with Anycast IP:  35
-	# Unqiue Exchange ASN's:  75
+	# Unique Exchange ASN's:  75
+	# Detected Third Party Mail Servers:  1891
+	% Detected Third Party Mail Servers:  80.63965884861408 %
 Type:  Tribal
 	# Domains:  237
 	# Domains with at least 1 mailserver:  204
@@ -97,4 +115,6 @@ Type:  Tribal
 	# US Locations:  57
 	# Foreign Locations:  3
 	# Domains Using Exchange with Anycast IP:  0
-	# Unqiue Exchange ASN's:  54
+	# Unique Exchange ASN's:  54
+	# Detected Third Party Mail Servers:  733
+	% Detected Third Party Mail Servers:  83.39021615472127 %
