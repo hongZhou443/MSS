@@ -26,6 +26,7 @@ RUN_DOMAIN_TYPES = True
 
 third_party_patterns = [
       re.compile("google", re.IGNORECASE),
+      re.compile("microsoft", re.IGNORECASE),
       re.compile("outlook", re.IGNORECASE),
       re.compile("mimecast", re.IGNORECASE),
       re.compile("barracuda", re.IGNORECASE),
@@ -35,13 +36,28 @@ third_party_patterns = [
       re.compile("zoho", re.IGNORECASE),
       re.compile("spamexperts", re.IGNORECASE),
       re.compile("everycloudtech", re.IGNORECASE),
+      re.compile("everycloudtech", re.IGNORECASE),
+      re.compile("frontbridge", re.IGNORECASE),
       ]
 
-def is_domain_third_party(domain_name):
+government_patterns = [
+      re.compile(r"\.gov\.?$")
+      ]
+
+def classify_third_party(domain_name, geo_host_name):
+    geo_host_name = "" if geo_host_name == None else str(geo_host_name)
+    domain_name = "" if geo_host_name == None else str(domain_name)
     for pattern in third_party_patterns:
         if re.search(pattern, domain_name) != None:
-           return True
-    return False
+            return "Third Party"
+        if re.search(pattern, geo_host_name) != None:
+            return "Third Party"
+    for pattern in government_patterns:
+        if re.search(pattern, geo_host_name) != None:
+            return "First Party"
+        if re.search(pattern, domain_name) != None:
+            return "First Party"
+    return "Unknown"
 
 def run_analysis(gov_df, mx_df, a_df, geo_df, output_dir, force_plot):
     print("Summary Info:") 
@@ -99,13 +115,60 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
     # Preference Analysis
     full_df['mx_preference_rank'] = full_df.groupby('gov_domain')['mx_preference'].rank(method='dense', ascending=False)
 
-    # Trying to determine third parties
-    full_df['third party'] = full_df['mx_exchange'].map(is_domain_third_party)
+    # Locations
+    full_df['location'] = full_df.apply(lambda row: str(row['geo_latitude']) + ',' + str(row['geo_longitude']), axis=1)
 
-    third_party_df = full_df.loc[full_df['third party'] == True]
+    # Trying to determine third parties
+    full_df['third party'] = full_df.apply((lambda row: classify_third_party(row['mx_exchange'], row['geo_hostname'])), axis=1)
+
+    third_party_df = full_df.loc[full_df['third party'] == "Third Party"]
     print("\t# Detected Third Party Mail Servers: ", len(third_party_df))
     print("\t% Detected Third Party Mail Servers: ", float(len(third_party_df) / len(full_df)) * 100.0, "%")
+    first_party_df = full_df.loc[full_df['third party'] == "First Party"]
+    print("\t# Detected First Party Mail Servers: ", len(first_party_df))
+    print("\t% Detected First Party Mail Servers: ", float(len(first_party_df) / len(full_df)) * 100.0, "%")
  
+    fig = plt.figure()
+    gb_third_party = full_df.groupby('third party')
+    gb_third_party['mx_exchange'].count().plot(kind='bar',
+        title="Third Party Detection",
+        xlabel="",
+        ylabel="Number of Mail Exchangers",
+        legend=False, use_index=True)
+    plt.xticks(rotation='horizontal')
+    plt.savefig(output_dir + '/' + output_prefix + ' Third Party Exchanges.png')
+    plt.close(fig)
+ 
+    fig = plt.figure()
+    gb_third_party['mx_exchange'].nunique().plot(kind='bar',
+        title="Unique Third Party Detection",
+        xlabel="",
+        ylabel="Number of Unique Mail Exchangers",
+        legend=False, use_index=True)
+    plt.xticks(rotation='horizontal')
+    plt.savefig(output_dir + '/' + output_prefix + ' Unique Third Party Exchanges.png')
+    plt.close(fig)
+
+    fig = plt.figure()
+    gb_third_party['location'].nunique().plot(kind='bar',
+        title="Unique Third Party Locations",
+        xlabel="",
+        ylabel="Number of Unique Locations",
+        legend=False, use_index=True)
+    plt.xticks(rotation='horizontal')
+    plt.savefig(output_dir + '/' + output_prefix + ' Unique Third Party Locations.png')
+    plt.close(fig)
+
+    fig = plt.figure()
+    gb_country = full_df.groupby('geo_country')
+    gb_country['mx_exchange'].nunique().sort_values(ascending=False).plot(kind='bar',
+        title="Number of Mail Servers Per Country",
+        xlabel="Country",
+        ylabel="Number of Unique Mail Domains",
+        legend=False, color='green', use_index=True, logy=True)
+    plt.savefig(output_dir + '/' + output_prefix + ' Exchanges Per Country Counts.png')
+    plt.close(fig)
+
     fig = plt.figure()
     gb_domain = full_df.groupby('gov_domain')
     gb_domain['mx_exchange'].nunique().plot(kind='hist',
@@ -118,7 +181,7 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
 
     fig = plt.figure()
     gb_domain = full_df.groupby('gov_domain')
-    gb_domain[['geo_latitude','geo_longitude']].nunique().plot(kind='hist',
+    gb_domain['location'].nunique().plot(kind='hist',
         title='CDF of Number of Unique Locations for a Government Domain',
         xlabel='Number of Locations',
         ylabel='Number of Government Domains',
@@ -133,7 +196,7 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         title='CDF of Number of AS serving a Government Domain',
         xlabel='Number of AS',
         ylabel='Number of Government Domains',
-        xticks=range(0,5),
+        xticks=range(0,6),
         cumulative=True, density=True, bins=20, legend=False, color='purple')
     plt.savefig(output_dir + '/' + output_prefix + ' ASN Count CDF.png')
     plt.close(fig)
@@ -146,6 +209,16 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         ylabel="Number of Unique Government Domains",
         legend=False, color='blue', bins=100, range=(0,500))
     plt.savefig(output_dir + '/' + output_prefix + ' Domains Per Exchange Counts.png')
+    plt.close(fig)
+
+    fig = plt.figure()
+    gb_asn = full_df.reset_index().groupby('a_asn')
+    gb_asn['gov_domain'].nunique().plot(kind='hist',
+        title="Number of AS Serving N Unique Government Domains",
+        xlabel="Number of AS",
+        ylabel="Number of Unique Government Domains",
+        legend=False, color='darkblue', bins=100, range=(0,500))
+    plt.savefig(output_dir + '/' + output_prefix + ' Domains Per ASN Counts.png')
     plt.close(fig)
 
     # Don't Count anycast IP's in this graph
@@ -168,14 +241,15 @@ def geoplot(df, output_prefix, output_dir, force):
     markersize = 80
 
     globe_file = output_dir + "/" + output_prefix + " Globe.png"
+    globe_party_file = output_dir + "/" + output_prefix + " Globe Third Party.png"
     globe_preference_file = output_dir + "/" + output_prefix + " Globe Preference.png"
     us_file = output_dir + "/" + output_prefix + " US.png"
     us_preference_file = output_dir + "/" + output_prefix + " US Preference.png"
     ca_file = output_dir + "/" + output_prefix + " California.png"
     globe_heat_file = output_dir + "/" + output_prefix + " Heat Globe.png"
 
-    s_loc_count = df.value_counts(subset=['geo_latitude','geo_longitude'], normalize=True).rename("loc_count")
-    df = df.set_index(['geo_latitude','geo_longitude']).merge(s_loc_count, left_index=True, right_index=True).reset_index()
+    s_loc_count = df.value_counts(subset='location', normalize=True).rename("loc_count")
+    df = df.set_index('location').merge(s_loc_count, left_index=True, right_index=True).reset_index()
 
     geometry = [Point(xy) for xy in zip(df['geo_longitude'], df['geo_latitude'])]
     gdf = GeoDataFrame(df, geometry=geometry)   
@@ -192,6 +266,11 @@ def geoplot(df, output_prefix, output_dir, force):
         ax = WORLD_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
         gdf.plot(column='gov_Domain type', ax=ax, marker='o', markersize=markersize, cmap='RdYlGn', legend=True); 
         plt.savefig(globe_file)
+
+    if force or not os.path.isfile(globe_party_file):
+        ax = WORLD_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
+        gdf.plot(column='third party', ax=ax, marker='o', markersize=markersize, legend=True); 
+        plt.savefig(globe_party_file)
 
     if force or not os.path.isfile(globe_preference_file):
         ax = WORLD_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
