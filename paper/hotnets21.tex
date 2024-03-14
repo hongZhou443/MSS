@@ -3,6 +3,7 @@
 \usepackage{times}  
 \usepackage{hyperref}
 \usepackage{titlesec}
+\usepackage{graphicx}
 
 \hypersetup{pdfstartview=FitH,pdfpagelayout=SinglePage}
 
@@ -57,15 +58,41 @@ As the government places more emphasis on online services, especially due to the
 This increased importance also makes government email servers a crucial part of national security and a clear target for attack.
 As such, whether or not the email infrastructure of one’s government is trustworthy is important, either in order to provide peace of mind when interacting with government organizations over email, or to caution citizens when receiving emails from government domains.
 
-In this paper, we aim to assess the trustworthiness of a mail server by seeing if third-party mail servers are used, as well as looking at the country in which mail servers are located.
+In this paper, we aim to characterize the present usage of mail servers by United States governments.
+This is done by measuring factors such as the configuration of the mail servers, the redundancy/overlap of servers across different domains, and how extensive the use of third-party servers is by \dotgov domains.
+This is all done with an emphasis on how the different levels of government manage their infrastructure differently, from city governments to the federal branches. as well as the physical locations which mail servers are located.
+
 We perform DNS lookups on numerous \dotgov domains to extract their associated mail servers and their IP addresses.
 In order to find where the mail servers are located, we use IPInfo to map IPs to geolocations. If the analysis shows that the mail server is located in a foreign country, it could be cause for concern.
 
 \section{Contributions}
 
+Our main contributions in this study are as follows:
+\begin{itemize}
+\item
+Using geolocation to gain preliminary understanding of the physical security of government mail servers.
+In this area, we found that while the majority of mail server locations used by \dotgov domains reside within the borders of the United States, a small percentage are being hosted outside of the country.
+\item
+An analysis of the prevalence of first and third-parties in mail servers and their physical locations. Verifying previous studies, and making new contributions by determining how the different levels of government treat third party providers differently.
+\item
+Measuring the redundancy in mail servers used by \dotgov domains as well as the centralization of mail servers to determine the reliability/vulnerability of government services.
+\end{itemize}
 
+\section{Background}
 
-\section{Background/Prior Work}
+\subsection{Mail Servers}
+
+In order to enable e-mail services for a domain, the owner of a domain must add DNS MX record(s) to the set of records for their domain.
+Each of these records contains an \textit{exchange} field, which contains a domain name, corresponding to a mail server which is responsible for sending and receiving mail on the behalf of the domain.
+In this paper we will refer to these servers as \textit{mail servers}. A single domain can be served by multiple mail servers, either by listing multiple MX records, each with a different domain.
+Or through other load balancing techniques such as mapping multiple IP's to a single mail server domain, or even by mapping multiple servers to a single IP by utilizing IP anycast.
+In practice though we've found simply listing multiple MX records to be the most common approach used.
+
+In order to differentiate between these different mail server domains, MX records contain an extra \textit{preference} field, which is a single number used to indicate the order in which mail servers should be contacted.
+For example, if \textit{cia.gov} contains two MX records, one for \textit{mail0.outlook.com} with preference 10, and another for \textit{mail1.outlook.com} with preference 20, then when sending mail to a CIA email account, one should first try to connect to \textit{mail0.outlook.com}.
+And then only resort to using \textit{mail1.outlook.com} if the first server is unresponsive, because the first server has a lower preference number, and thus a higher priority.
+
+\subsection{Prior Work}
 
 Studies have been done on mail domain zones as well as the zones containing mail servers for said mail domain (referred to as Direct Zones).
 Specifically, research on the security of mail servers used by various countries has been done by studying these direct zones, such as the path redundancies of the mail servers, the DNS redundancies for each zone, mail server redundancy, etc.
@@ -81,54 +108,59 @@ We make a slight modification to that approach so that it better serves our inte
 
 \section{Methodology}
 
-\subsection{Data Collection}
+\subsection{Data Sets}
+For each domain in our set of government domains~\cite{cisadomains}, we first run DNS queries to obtain the MX records of that domain, creating a map from government domain to mail server domain.
+Then we can take those records and run another set of queries to get the IP addresses associated which each mail domain through DNS A records.
 
-For each domain, we first run nslookup to obtain the MX records of that domain, which contains information about the mail servers that the domain is using.
-However, these MX records could be misleading;~\cite{liu}~describes how, for example, we may infer that gsipartners.com self-hosts their email servers because their MX record lookup returns mailhost.gsipartners.com.
-Upon further inspection however, the mail server domain mailhost.gsipartners.com resolves to an IP address announced by Google, which means that the mail service is actually hosted by Google.
-Following the MX record, we ran A record lookups on the mail server domains to get the IPs associated with the domain names.
-We compile these mail server domains and their corresponding IP addresses into a \csv file for further analysis.
+This process is relatively straightforward, and we have scripted the entire process, from a list of domains, to running a set of analyses on the final data, using python.
+The code and final set of data and graphs can be found at~\cite{ourgithubrepo}~in order to faciliate reproducibility and possibly facilitate future analysis of governments other than the U.S.
 
-Getting the IP address is especially helpful, as we can use a geolocation service to map IPs to their approximate physical locations.
-Our geolocation service of choice is IPInfo, chosen out of convenience. 
+Once we have our final mapping from government domain to mail server(s) and corresponding IP(s), we then we then can take the set of IP addresses and cross reference them against two different datasets to determine their geographic and network information.
 
-The entire process is automated using Python scripts that run terminal commands such as nslookup by spawning a process.
-We then obtain the list of \dotgov domains from a repository maintained by~\cite{cisadomains}.
-Our script loops through the list of \dotgov domains and runs the analysis suite, creating a \csv file with our data collection results.
+\subsection{Geolocation}
 
-\subsection{Analysis}
+First we reference each mail server IP against the IPInfo~\cite{ipinfo}~geo location service's database.
+This gives us a wide range of information about the physical location of the IP, ranging from broad classifications such as which country the IP is thought to be in, to a specific longitude and latitude point on the globe.
+When determining a \textit{location} in the analysis of the data, we are referring to a specific pair of latitude and longitude, because of the wide range of detail levels in the IPInfo dataset.
 
-\subsubsection{Mail Server Preferences}
+There are pros and cons to this approach of determining locations, but in general we believe it should be relatively unbiased, because it can both over and under count in different situations.
+For example, if two servers are located in different regions of the same state, but IPInfo does not have any more information than the state, then they will both be mapped to the center point of the state, and considered to be the same location, thus an undercount.
+However if two servers are truly co-located, but IPInfo has a different levels of detail for each, then we would not be able to tell the difference, for example, if one is mapped to the center of the state, and the other is mapped to the center of the specific city.
 
-The purpose of analyzing the mail server preference of each government domain is to see if certain third party providers are being preferred over another third party provider (or even a first party provider).
-In order to do this, we utilize the MX records’ “preference” field included in our data collection of all domains.
-The lower the preference number, the higher the priority.
-We first sort the preferences of the mail servers, grouped by the government URL.
-Using this sorted data, we collect the highest priority mail server domain for each government domain.
-We also collect the second highest priority mail server domain (if it exists).
-We then analyze the frequency of each third party provider within both of these lists.
+\subsection{ASN's and IP Anycast}
 
-\subsubsection{Mail Server Centralization}
+The IPInfo dataset also contains entries indicating the Autonomous System Number associated with the IP and whether or not it is an anycast IP.
+We do utilize IPInfo for analysis related to IP anycast, though we refer to a more reliable CAIDA dataset~\cite{caidaiptoasn}~for mapping IP's to specific ASN's.
+We are unsure how reliable the IPInfo dataset is for determining anycast IP's, and in the future would like to use a dataset specifically for anycast.
 
-We then measure the centralization of mail server locations by creating two mappings.
-The first is the number of domains to a physical location, which allows us to determine whether there exists an over reliance by many different government services, to any single mail server location.
-The second is the mapping of physical location to a single \dotgov domain, which allows us to analyze the physical redundancy of mail servers utilized by any single government service.
-In essence, we ask the question “if a crucial mail server went down, how many government servers would be rendered unavailable?”.
-We also see if these distributions change significantly within and without the borders of the United States.
-Our analysis anonymizes the data garnered from our automated script. 
+\subsection{Mail Server Preferences}
 
-\subsubsection{Third Party Mail Servers}
+Because we query for all MX records of each domain, we can determine the realtive "rank" of each mail server from the perspective of each domain.
+We do this in order to determine how complex the policies behind domains with multiple MX servers.
+If we see a wide range of perferences, then that indicates that there is a large number of "backup" mail servers, which are not being used normally.
+Or if most servers are ranked similarly, and are thus used more or less equally.
+This also serves as an indication for the importance of each mail server from the perspective of the government domain, and restrict some analysis to only servers which are ranked higher.
+
+\subsection{Third Party Mail Servers}
 
 Finally, we measure the usage of third party mail servers, as opposed to the government using their own servers to facilitate mail transfer.
-One option for determining the third party of choice given the domain name is to analyze the name itself, looking through a hard-coded list of third party providers and searching for a match.
-However, this method has major drawbacks: the third party analysis would not be comprehensive, as our hard-coded list of third parties would not be exhaustive.
-Furthermore, if a third party provider has different variations of domain names, our list would have to capture all possible variations of said domain names.
-Even a slight variation (such as “cloudflare.us” to “cloudflare.usa”) would cause the program to mark it as “not a third party provider” if it is not in our list.
+We used an extremely coarse method for determining third party servers, analyzing the mail domain name itself, and classifying each mail domain as either, first party, third party, or unknown.
 
-Our method of choice is instead to utilize an IP to ASN mapping, and then look up what third party provider is associated with that ASN.
-Looking up which provider is associated with an ASN is more effective compared to a static analysis of the domain name.
+We use a set of regular expressions trying to match common third party mail providers domain names to each server.
+And concluding it's a third party if we find a match.
+If we cannot find a match, we then check to see if the domain is itself within the top level \dotgov domain, and if we conclude it is a first party server, hosted by the US government.
+If both methods fail, then we mark the mail domain as "unknown".
+
+This method has major drawbacks: the third party analysis would not be comprehensive, as our hard-coded list of third parties would not be exhaustive.
+And it makes the task of associating servers with a specific company more difficult, as each rule needs to be manually created, and checked to make sure it is owned by the correct company.
+It also does not allow us to conclude which entity within the \dotgov domain is hosting the server. So it is possible that one part of the U.S. government is hosting a mail server for another, and hence not truly a first party server.
+
+However, despite these drawbacks, we were able to classify upwards of 80\% of domains, so we chose to use this relatively simple approach.
+
+An arguably better, though more complicated, method is instead to utilize an IP to ASN mapping, and then using WHOIS queries to determine which entity owns the specific ASN.
 We can check if a third-party provider is being used if the ASN does not belong to the US Government and concretely confirm the identity of the third party itself.
-Through this alternative, we avoid the pitfalls of having a hard-coded list of third party providers while guaranteeing a more accurate assessment.
+This approach assumes that the owner of the mail server also owns the AS which the server is located within, which may not be true, especially for lower levels of goverment such as smaller cities and counties.
+In the future we would like to utilize a combination of domain name analysis and ASN ownership to make our determination.
 
 \section{Results}
 

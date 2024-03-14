@@ -1,5 +1,10 @@
 \begin{thebibliography}{1}
 
+\bibitem{ipinfo}
+Ip info geolocation api free account.
+\newblock \url{https://ipinfo.io/products/ip-geolocation-api}, 2024.
+\newblock Accessed: 2024-2-29.
+
 \bibitem{cisadomains}
 List of registered .gov domains.
 \newblock
@@ -12,6 +17,17 @@ A.~Bartoli.
 \newblock Network architecture and roa protection of government mail domains: A
   case study.
 \newblock {\em Computer Communications}, 201:143--161, 2023.
+
+\bibitem{caidaiptoasn}
+E.~Carisimo.
+\newblock Ip to asn mapper using caida.
+\newblock \url{https://github.com/estcarisimo/map-ip-to-asn}, 2024.
+\newblock Accessed: 2024-3-4.
+
+\bibitem{ourgithubrepo}
+K.~Hayes, J.~Park, and H.~Zhou.
+\newblock Project source code.
+\newblock \url{https://github.com/hongZhou443/MSS}, 2024.
 
 \bibitem{liu}
 E.~Liu, G.~Akiwate, M.~Jonker, A.~Mirian, S.~Savage, and G.~M. Voelker.
