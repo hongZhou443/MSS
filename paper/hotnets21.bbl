@@ -1,0 +1,22 @@
+\begin{thebibliography}{1}
+
+\bibitem{cisadomains}
+List of registered .gov domains.
+\newblock
+  \url{https://raw.githubusercontent.com/cisagov/dotgov-data/main/current-full.csv},
+  2024.
+\newblock Accessed: 2024-2-9.
+
+\bibitem{bartoli}
+A.~Bartoli.
+\newblock Network architecture and roa protection of government mail domains: A
+  case study.
+\newblock {\em Computer Communications}, 201:143--161, 2023.
+
+\bibitem{liu}
+E.~Liu, G.~Akiwate, M.~Jonker, A.~Mirian, S.~Savage, and G.~M. Voelker.
+\newblock Who's got your mail? characterizing mail service provider usage.
+\newblock In {\em ACM Internet Measurement Conference (IMC '21)}, page~15,
+  Virtual Event, USA. ACM, New York, NY, USA, Nov. 2021.
+
+\end{thebibliography}

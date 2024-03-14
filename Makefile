@@ -8,6 +8,7 @@ ROOT_DIR:=$(shell pwd)
 SCRIPTS_DIR:=./scripts
 DATA_DIR:=./data
 OUTPUT_DIR=./results
+PAPER_DIR:=./paper
 
 US_CSV=$(DATA_DIR)/registry-gov.csv
 US_CITY_CSV=$(DATA_DIR)/US/city.csv
@@ -16,7 +17,7 @@ UK_CSV=$(DATA_DIR)/List_of_gov.uk_domains_as_of_30_March_2023.csv
 default: paper
 
 paper: FORCE
-	@make -C $(PAPER_DIR) paper
+	@make -C $(PAPER_DIR) all
 
 us_geolite:
 	@mkdir -p $(OUTPUT_DIR)/US

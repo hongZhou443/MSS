@@ -4,137 +4,24 @@ Summary Info:
 	# Unqiue Exchange Domains:  7477
 	# Exchanges whose A record lookup failed:  206
 	# Unique Locations (which had at least a country code):  514
-	# US Locations:  495
-	# Foreign Locations:  19
 	# Domains Using Exchange with Anycast IP:  254
 	# Unique Exchange ASN's:  449
-	# Detected Third Party Mail Servers:  27512
-	% Detected Third Party Mail Servers:  82.4354287768922 %
-	# Detected First Party Mail Servers:  1515
-	% Detected First Party Mail Servers:  4.539461856535027 %
-Type:  City
-	# Domains:  4905
-	# Domains with at least 1 mailserver:  4310
-	# Unqiue Exchange Domains:  4515
-	# Exchanges whose A record lookup failed:  94
-	# Unique Locations (which had at least a country code):  308
-	# US Locations:  292
-	# Foreign Locations:  16
-	# Domains Using Exchange with Anycast IP:  137
-	# Unique Exchange ASN's:  273
-	# Detected Third Party Mail Servers:  17172
-	% Detected Third Party Mail Servers:  86.28278564968345 %
-	# Detected First Party Mail Servers:  548
-	% Detected First Party Mail Servers:  2.7534921113455932 %
-Type:  County
-	# Domains:  1772
-	# Domains with at least 1 mailserver:  1426
-	# Unqiue Exchange Domains:  1614
-	# Exchanges whose A record lookup failed:  40
-	# Unique Locations (which had at least a country code):  171
-	# US Locations:  164
-	# Foreign Locations:  7
-	# Domains Using Exchange with Anycast IP:  63
-	# Unique Exchange ASN's:  164
-	# Detected Third Party Mail Servers:  5343
-	% Detected Third Party Mail Servers:  81.41094011884809 %
-	# Detected First Party Mail Servers:  178
-	% Detected First Party Mail Servers:  2.7121743105287215 %
-Type:  Federal - Executive
-	# Domains:  1205
-	# Domains with at least 1 mailserver:  566
-	# Unqiue Exchange Domains:  472
-	# Exchanges whose A record lookup failed:  28
-	# Unique Locations (which had at least a country code):  76
-	# US Locations:  71
-	# Foreign Locations:  5
-	# Domains Using Exchange with Anycast IP:  3
-	# Unique Exchange ASN's:  77
-	# Detected Third Party Mail Servers:  1263
-	% Detected Third Party Mail Servers:  54.60440985732814 %
-	# Detected First Party Mail Servers:  502
-	% Detected First Party Mail Servers:  21.703415477734545 %
-Type:  Federal - Judicial
-	# Domains:  24
-	# Domains with at least 1 mailserver:  11
-	# Unqiue Exchange Domains:  19
-	# Exchanges whose A record lookup failed:  1
-	# Unique Locations (which had at least a country code):  10
-	# US Locations:  8
-	# Foreign Locations:  2
-	# Domains Using Exchange with Anycast IP:  0
-	# Unique Exchange ASN's:  7
-	# Detected Third Party Mail Servers:  17
-	% Detected Third Party Mail Servers:  50.0 %
-	# Detected First Party Mail Servers:  10
-	% Detected First Party Mail Servers:  29.411764705882355 %
-Type:  Federal - Legislative
-	# Domains:  120
-	# Domains with at least 1 mailserver:  46
-	# Unqiue Exchange Domains:  51
-	# Exchanges whose A record lookup failed:  6
-	# Unique Locations (which had at least a country code):  16
-	# US Locations:  14
-	# Foreign Locations:  2
-	# Domains Using Exchange with Anycast IP:  0
-	# Unique Exchange ASN's:  10
-	# Detected Third Party Mail Servers:  51
-	% Detected Third Party Mail Servers:  31.874999999999996 %
-	# Detected First Party Mail Servers:  109
-	% Detected First Party Mail Servers:  68.125 %
-Type:  Interstate
-	# Domains:  34
-	# Domains with at least 1 mailserver:  27
-	# Unqiue Exchange Domains:  43
-	# Exchanges whose A record lookup failed:  2
-	# Unique Locations (which had at least a country code):  20
-	# US Locations:  18
-	# Foreign Locations:  2
-	# Domains Using Exchange with Anycast IP:  0
-	# Unique Exchange ASN's:  14
-	# Detected Third Party Mail Servers:  96
-	% Detected Third Party Mail Servers:  74.4186046511628 %
-	# Detected First Party Mail Servers:  3
-	% Detected First Party Mail Servers:  2.3255813953488373 %
-Type:  Special district
-	# Domains:  328
-	# Domains with at least 1 mailserver:  229
-	# Unqiue Exchange Domains:  262
-	# Exchanges whose A record lookup failed:  9
-	# Unique Locations (which had at least a country code):  48
-	# US Locations:  44
-	# Foreign Locations:  4
-	# Domains Using Exchange with Anycast IP:  16
-	# Unique Exchange ASN's:  46
-	# Detected Third Party Mail Servers:  900
-	% Detected Third Party Mail Servers:  85.79599618684462 %
-	# Detected First Party Mail Servers:  19
-	% Detected First Party Mail Servers:  1.811248808388942 %
-Type:  State or territory
-	# Domains:  1225
-	# Domains with at least 1 mailserver:  581
-	# Unqiue Exchange Domains:  581
-	# Exchanges whose A record lookup failed:  45
-	# Unique Locations (which had at least a country code):  90
-	# US Locations:  80
-	# Foreign Locations:  10
-	# Domains Using Exchange with Anycast IP:  35
-	# Unique Exchange ASN's:  75
-	# Detected Third Party Mail Servers:  1935
-	% Detected Third Party Mail Servers:  82.51599147121536 %
-	# Detected First Party Mail Servers:  108
-	% Detected First Party Mail Servers:  4.605543710021322 %
-Type:  Tribal
-	# Domains:  237
-	# Domains with at least 1 mailserver:  204
-	# Unqiue Exchange Domains:  267
-	# Exchanges whose A record lookup failed:  16
-	# Unique Locations (which had at least a country code):  60
-	# US Locations:  57
-	# Foreign Locations:  3
-	# Domains Using Exchange with Anycast IP:  0
-	# Unique Exchange ASN's:  54
-	# Detected Third Party Mail Servers:  735
-	% Detected Third Party Mail Servers:  83.61774744027304 %
-	# Detected First Party Mail Servers:  38
-	% Detected First Party Mail Servers:  4.323094425483505 %
+a_a_record
+52.101.8.46     NaN
+52.101.11.2     NaN
+52.101.11.9     NaN
+52.101.9.2      NaN
+52.101.42.13    NaN
+               ... 
+52.101.40.0     NaN
+52.101.8.34     NaN
+52.101.194.4    NaN
+52.101.40.24    NaN
+52.101.40.2     NaN
+Name: foreign, Length: 33374, dtype: object
+	# US Locations:  0
+	# Foreign Locations:  0
+	# Detected Third Party Mail Servers:  28481
+	% Detected Third Party Mail Servers:  85.33888655839876 %
+	# Detected First Party Mail Servers:  1490
+	% Detected First Party Mail Servers:  4.46455324504105 %

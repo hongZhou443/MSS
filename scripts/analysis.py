@@ -27,16 +27,28 @@ RUN_DOMAIN_TYPES = True
 third_party_patterns = [
       re.compile("google", re.IGNORECASE),
       re.compile("microsoft", re.IGNORECASE),
+      re.compile("amazon", re.IGNORECASE),
+      re.compile("aws", re.IGNORECASE),
+      re.compile("cloudflare", re.IGNORECASE),
       re.compile("outlook", re.IGNORECASE),
       re.compile("mimecast", re.IGNORECASE),
       re.compile("barracuda", re.IGNORECASE),
       re.compile("ppe-hosted", re.IGNORECASE),
       re.compile("pphosted", re.IGNORECASE),
+      re.compile("antispamcloud", re.IGNORECASE),
+      re.compile("antispameurope", re.IGNORECASE),
       re.compile("sophos", re.IGNORECASE),
       re.compile("zoho", re.IGNORECASE),
       re.compile("spamexperts", re.IGNORECASE),
       re.compile("everycloudtech", re.IGNORECASE),
       re.compile("everycloudtech", re.IGNORECASE),
+      re.compile("chillidoghosting", re.IGNORECASE),
+      re.compile("hornetsecurity", re.IGNORECASE),
+      re.compile("mailhop", re.IGNORECASE),
+      re.compile("migadu", re.IGNORECASE),
+      re.compile("cloudmails", re.IGNORECASE),
+      re.compile("comodo", re.IGNORECASE),
+      re.compile("chillidoghosting", re.IGNORECASE),
       re.compile("frontbridge", re.IGNORECASE),
       ]
 
@@ -101,12 +113,6 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
     location_df = location_df.dropna(subset='geo_country')
     print("\t# Unique Locations (which had at least a country code): ", len(location_df))
 
-    us_locations_df = location_df.loc[location_df['geo_country'] == 'US']
-    foreign_locations_df = location_df.loc[location_df['geo_country'] != 'US']
-
-    print("\t# US Locations: ", len(us_locations_df))
-    print("\t# Foreign Locations: ", len(foreign_locations_df))
-
     anycast_df = with_a_record_df.loc[with_a_record_df['geo_anycast'] == True]
     print("\t# Domains Using Exchange with Anycast IP: ", len(anycast_df))
  
@@ -114,6 +120,12 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
 
     # Preference Analysis
     full_df['mx_preference_rank'] = full_df.groupby('gov_domain')['mx_preference'].rank(method='dense', ascending=False)
+
+
+    full_df['foreign'] = location_df['geo_country'] != 'US'
+    print(full_df['foreign'])
+    print("\t# US Locations: ", len(full_df.loc[full_df['foreign'] == False]))
+    print("\t# Foreign Locations: ", len(full_df.loc[full_df['foreign'] == True]))
 
     # Locations
     full_df['location'] = full_df.apply(lambda row: str(row['geo_latitude']) + ',' + str(row['geo_longitude']), axis=1)
@@ -127,7 +139,18 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
     first_party_df = full_df.loc[full_df['third party'] == "First Party"]
     print("\t# Detected First Party Mail Servers: ", len(first_party_df))
     print("\t% Detected First Party Mail Servers: ", float(len(first_party_df) / len(full_df)) * 100.0, "%")
- 
+  
+    fig = plt.figure()
+    gb_third_party = full_df.groupby('foreign')
+    gb_third_party['mx_exchange'].count().plot(kind='bar',
+        title="Foreign Mail Exchanges Prevalence",
+        xlabel="Is Foreign",
+        ylabel="Number of Mail Exchangers",
+        legend=False, use_index=True)
+    plt.xticks(rotation='horizontal')
+    plt.savefig(output_dir + '/' + output_prefix + ' Foreign Exchanges.png')
+    plt.close(fig)
+
     fig = plt.figure()
     gb_third_party = full_df.groupby('third party')
     gb_third_party['mx_exchange'].count().plot(kind='bar',
@@ -219,6 +242,16 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         ylabel="Number of Unique Government Domains",
         legend=False, color='darkblue', bins=100, range=(0,500))
     plt.savefig(output_dir + '/' + output_prefix + ' Domains Per ASN Counts.png')
+    plt.close(fig)
+
+    fig = plt.figure()
+    gb_asn = full_df.reset_index().groupby('location')
+    gb_asn['gov_domain'].nunique().plot(kind='hist',
+        title="Number of Locations Serving N Unique Government Domains",
+        xlabel="Number of Locations",
+        ylabel="Number of Unique Government Domains",
+        legend=False, color='darkgreen', bins=100, range=(0,500))
+    plt.savefig(output_dir + '/' + output_prefix + ' Domains Per Location Counts.png')
     plt.close(fig)
 
     # Don't Count anycast IP's in this graph
