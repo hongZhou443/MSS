@@ -109,21 +109,10 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
     exchanges = with_a_record_df['mx_exchange'].drop_duplicates()
     print('\t# Exchanges whose A record lookup failed: ', len(all_exchanges) - len(exchanges))
 
-    location_df = with_a_record_df.drop_duplicates(subset=['geo_latitude','geo_longitude'])
-    location_df = location_df.dropna(subset='geo_country')
-    print("\t# Unique Locations (which had at least a country code): ", len(location_df))
-
-    anycast_df = with_a_record_df.loc[with_a_record_df['geo_anycast'] == True]
-    print("\t# Domains Using Exchange with Anycast IP: ", len(anycast_df))
- 
-    print("\t# Unique Exchange ASN's: ", len(full_df['a_asn'].drop_duplicates()))
-
     # Preference Analysis
     full_df['mx_preference_rank'] = full_df.groupby('gov_domain')['mx_preference'].rank(method='dense', ascending=False)
 
-
-    full_df['foreign'] = location_df['geo_country'] != 'US'
-    print(full_df['foreign'])
+    full_df['foreign'] = full_df['geo_country'] != 'US'
     print("\t# US Locations: ", len(full_df.loc[full_df['foreign'] == False]))
     print("\t# Foreign Locations: ", len(full_df.loc[full_df['foreign'] == True]))
 
@@ -139,7 +128,18 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
     first_party_df = full_df.loc[full_df['third party'] == "First Party"]
     print("\t# Detected First Party Mail Servers: ", len(first_party_df))
     print("\t% Detected First Party Mail Servers: ", float(len(first_party_df) / len(full_df)) * 100.0, "%")
-  
+ 
+    location_df = full_df.drop_duplicates(subset='location')
+    location_df = location_df.dropna(subset='geo_country')
+    print("\t# Unique Locations (which had at least a country code): ", len(location_df))
+    print("\t# Unique Foreign Locations: ", (location_df[location_df.foreign == True].shape[0]))
+    print("\t# Unique Domestic Locations: ", (location_df[location_df.foreign == False].shape[0]))
+
+    anycast_df = with_a_record_df.loc[with_a_record_df['geo_anycast'] == True]
+    print("\t# Domains Using Exchange with Anycast IP: ", len(anycast_df))
+ 
+    print("\t# Unique Exchange ASN's: ", len(full_df['a_asn'].drop_duplicates()))
+ 
     fig = plt.figure()
     gb_third_party = full_df.groupby('foreign')
     gb_third_party['mx_exchange'].count().plot(kind='bar',
@@ -148,7 +148,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         ylabel="Number of Mail Exchangers",
         legend=False, use_index=True)
     plt.xticks(rotation='horizontal')
-    plt.savefig(output_dir + '/' + output_prefix + ' Foreign Exchanges.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Foreign Exchanges.png')
     plt.close(fig)
 
     fig = plt.figure()
@@ -159,7 +160,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         ylabel="Number of Mail Exchangers",
         legend=False, use_index=True)
     plt.xticks(rotation='horizontal')
-    plt.savefig(output_dir + '/' + output_prefix + ' Third Party Exchanges.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Third Party Exchanges.png')
     plt.close(fig)
  
     fig = plt.figure()
@@ -169,7 +171,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         ylabel="Number of Unique Mail Exchangers",
         legend=False, use_index=True)
     plt.xticks(rotation='horizontal')
-    plt.savefig(output_dir + '/' + output_prefix + ' Unique Third Party Exchanges.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Unique Third Party Exchanges.png')
     plt.close(fig)
 
     fig = plt.figure()
@@ -179,7 +182,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         ylabel="Number of Unique Locations",
         legend=False, use_index=True)
     plt.xticks(rotation='horizontal')
-    plt.savefig(output_dir + '/' + output_prefix + ' Unique Third Party Locations.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Unique Third Party Locations.png')
     plt.close(fig)
 
     fig = plt.figure()
@@ -189,7 +193,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         xlabel="Country",
         ylabel="Number of Unique Mail Domains",
         legend=False, color='green', use_index=True, logy=True)
-    plt.savefig(output_dir + '/' + output_prefix + ' Exchanges Per Country Counts.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Exchanges Per Country Counts.png')
     plt.close(fig)
 
     fig = plt.figure()
@@ -199,7 +204,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         xlabel="Number of Government Domains",
         ylabel="Number of Unique Mail Domains",
         range=(1,10), legend=False, color='green')
-    plt.savefig(output_dir + '/' + output_prefix + ' Exchanges Per Domain Counts.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Exchanges Per Domain Counts.png')
     plt.close(fig)
 
     fig = plt.figure()
@@ -210,7 +216,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         ylabel='Number of Government Domains',
         xticks=range(0,9),
         cumulative=True, density=True, bins=20, legend=False, color='orange')
-    plt.savefig(output_dir + '/' + output_prefix + ' Location Count CDF.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Location Count CDF.png')
     plt.close(fig)
 
     fig = plt.figure()
@@ -221,7 +228,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         ylabel='Number of Government Domains',
         xticks=range(0,6),
         cumulative=True, density=True, bins=20, legend=False, color='purple')
-    plt.savefig(output_dir + '/' + output_prefix + ' ASN Count CDF.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'ASN Count CDF.png')
     plt.close(fig)
 
     fig = plt.figure()
@@ -231,7 +239,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         xlabel="Number of Mail Domains",
         ylabel="Number of Unique Government Domains",
         legend=False, color='blue', bins=100, range=(0,500))
-    plt.savefig(output_dir + '/' + output_prefix + ' Domains Per Exchange Counts.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Domains Per Exchange Counts.png')
     plt.close(fig)
 
     fig = plt.figure()
@@ -241,7 +250,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         xlabel="Number of AS",
         ylabel="Number of Unique Government Domains",
         legend=False, color='darkblue', bins=100, range=(0,500))
-    plt.savefig(output_dir + '/' + output_prefix + ' Domains Per ASN Counts.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Domains Per ASN Counts.png')
     plt.close(fig)
 
     fig = plt.figure()
@@ -251,7 +261,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         xlabel="Number of Locations",
         ylabel="Number of Unique Government Domains",
         legend=False, color='darkgreen', bins=100, range=(0,500))
-    plt.savefig(output_dir + '/' + output_prefix + ' Domains Per Location Counts.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Domains Per Location Counts.png')
     plt.close(fig)
 
     # Don't Count anycast IP's in this graph
@@ -262,7 +273,8 @@ def report_statistics(gov_df, mx_df, a_df, geo_df, output_prefix, output_dir, fo
         xlabel="Number of Mail Server IP's",
         ylabel="Number of Unique Government Servers",
         legend=False, color='red', bins=100, range=(0,500))
-    plt.savefig(output_dir + '/' + output_prefix + ' Domains Per Exchange IP.png')
+    plt.tight_layout()
+    plt.savefig(output_dir + '/' + output_prefix + 'Domains Per Exchange IP.png')
     plt.close(fig)
 
     # Maps
@@ -273,13 +285,13 @@ def geoplot(df, output_prefix, output_dir, force):
     figsize = (20,12)
     markersize = 80
 
-    globe_file = output_dir + "/" + output_prefix + " Globe.png"
-    globe_party_file = output_dir + "/" + output_prefix + " Globe Third Party.png"
-    globe_preference_file = output_dir + "/" + output_prefix + " Globe Preference.png"
-    us_file = output_dir + "/" + output_prefix + " US.png"
-    us_preference_file = output_dir + "/" + output_prefix + " US Preference.png"
-    ca_file = output_dir + "/" + output_prefix + " California.png"
-    globe_heat_file = output_dir + "/" + output_prefix + " Heat Globe.png"
+    globe_file = output_dir + "/" + output_prefix + "Globe.png"
+    globe_party_file = output_dir + "/" + output_prefix + "Globe Third Party.png"
+    globe_preference_file = output_dir + "/" + output_prefix + "Globe Preference.png"
+    us_file = output_dir + "/" + output_prefix + "US.png"
+    us_preference_file = output_dir + "/" + output_prefix + "US Preference.png"
+    ca_file = output_dir + "/" + output_prefix + "California.png"
+    globe_heat_file = output_dir + "/" + output_prefix + "Heat Globe.png"
 
     s_loc_count = df.value_counts(subset='location', normalize=True).rename("loc_count")
     df = df.set_index('location').merge(s_loc_count, left_index=True, right_index=True).reset_index()
@@ -298,35 +310,42 @@ def geoplot(df, output_prefix, output_dir, force):
     if force or not os.path.isfile(globe_file):
         ax = WORLD_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
         gdf.plot(column='gov_Domain type', ax=ax, marker='o', markersize=markersize, cmap='RdYlGn', legend=True); 
+        plt.tight_layout()
         plt.savefig(globe_file)
 
     if force or not os.path.isfile(globe_party_file):
         ax = WORLD_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
         gdf.plot(column='third party', ax=ax, marker='o', markersize=markersize, legend=True); 
+        plt.tight_layout()
         plt.savefig(globe_party_file)
 
     if force or not os.path.isfile(globe_preference_file):
         ax = WORLD_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
         gdf.plot(column='mx_preference_rank', ax=ax, marker='o', markersize=markersize, cmap='RdYlGn', legend=True); 
+        plt.tight_layout()
         plt.savefig(globe_preference_file)
 
     if force or not os.path.isfile(us_file):
         ax = US_CONT_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
         continental_us_gdf.plot(column='gov_Domain type', ax=ax, marker='o', markersize=markersize, cmap='RdYlGn', legend=True);
-        plt.savefig(output_dir + "/" + output_prefix + " US.png")
+        plt.tight_layout()
+        plt.savefig(output_dir + "/" + output_prefix + "US.png")
 
     if force or not os.path.isfile(us_preference_file):
         ax = US_CONT_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
         continental_us_gdf.plot(column='mx_preference_rank', ax=ax, marker='o', markersize=markersize, cmap='RdYlGn', legend=True);
-        plt.savefig(output_dir + "/" + output_prefix + " US Preference.png")
+        plt.tight_layout()
+        plt.savefig(output_dir + "/" + output_prefix + "US Preference.png")
 
     if force or not os.path.isfile(ca_file):
         ax = CA_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
         gdf.loc[gdf['geo_region'] == 'California'].plot(column='gov_Domain type', ax=ax, marker='o', markersize=markersize, cmap='RdYlGn', legend=True);
+        plt.tight_layout()
         plt.savefig(ca_file)
 
     if force or not os.path.isfile(globe_heat_file):
         ax = WORLD_MAP.plot(figsize=figsize,edgecolor='k',alpha=0.4) 
         gdf.plot(ax=ax, alpha = 0.3, markersize=gdf["loc_count"]*700, color='r'); 
+        plt.tight_layout()
         plt.savefig(globe_heat_file)
 

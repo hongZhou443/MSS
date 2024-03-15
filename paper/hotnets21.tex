@@ -5,6 +5,8 @@
 \usepackage{titlesec}
 \usepackage{graphicx}
 
+\graphicspath{ {../results/US/} }
+
 \hypersetup{pdfstartview=FitH,pdfpagelayout=SinglePage}
 
 \setlength\paperheight {11in}
@@ -18,14 +20,14 @@
 \newcommand{\csv}{csv\space}
 
 % Some data which will need to be copied before we submit
-\newcommand{\foreignmslocations}{???\space}
+\newcommand{\foreignmslocations}{19\space}
 
 \begin{document}
 
 % \conferenceinfo{HotNets 2021} {}
-% \CopyrightYear{2021}
+\CopyrightYear{2024}
 % \crdata{X}
-% \date{}
+\date{3/14/2024}
 
 %%%%%%%%%%%% THIS IS WHERE WE PUT IN THE TITLE AND AUTHORS %%%%%%%%%%%%
 
@@ -164,20 +166,49 @@ In the future we would like to utilize a combination of domain name analysis and
 
 \section{Results}
 
-\subsection{IP Anycast}
-
-We would like to begin our analysis by noting the unknown degree of influence which anycast IPs affected our data.
-During data collection, we noticed a total of [Insert number here] servers using IP anycast.
-Through anycast, a single domain could potentially use MX exchanges in multiple locations with the same IP.
-This means that the count of physical locations that any single domain relies on is actually an undercount due to the influence of IP Anycast.
-This is especially true for several specific locations, such as San Francisco, Seattle, Kansas City, San Antonio, and Jacksonville.
-
 \subsection{Mail Server Locations}
 
-The vast majority of mail servers’ locations found are within the US.
-However, there are a total of \foreignmslocations locations beyond the borders of the United States.
-Most of these locations are in US-friendly countries, notably France, England, Japan, and South Korea.
-However, there are notable outliers such as one in the coastlines of China.
+We can see the distributions of mail server country in Figure \ref{fig:countrysummary} as a log scale.
+As might be expected, the vast majority of mail servers’ locations are found are within the United States, with 495 unique domestic locations, and only 19 foreign locations.
+We can see that most of these foreign locations are in US-friendly countries, notably Canada, Denmark, France, the Netherlands, and Hong Kong.
+
+\begin{figure}
+\label{fig:countrysummary}
+\noindent\includegraphics[width=0.5\textwidth]{Summary/Exchanges Per Country Counts.png}
+\caption{Mail Server Domains Per Country}
+\end{figure}
+
+At first we hypothesized that these foreign locations would be hosted by the state department, or US embassies abroad.
+Yet somewhat surprisingly we found that when we associated the foreign locations with a level of government as seen in Figure \ref{fig:globesummary}, then most of the locations abroad are hosted at a lower level of government, at the city or county level.
+And we found that the national branches of government were almost entirely hosted within the US.
+This makes sense in retrospect, because of the increased importance of security at the natinal level, which means they are more likely to host servers domestically.
+Whereas a local government is less concerned with security from foreign governments, and is more likely to use a thrid party provider which may use foreign servers.
+
+\begin{figure}
+\label{fig:globesummary}
+\noindent\includegraphics[width=0.5\textwidth]{Summary/Globe.png}
+\caption{US Government Mail Server Locations}
+\end{figure}
+
+\subsection{IP Anycast}
+
+Surprisingly, we found a number of mail server addresses, 254 total, which were flagged by IPInfo as being IP anycast addresses.
+Through anycast, a single domain could potentially use MX exchanges in multiple locations with the same IP, which we would not be able to detect.
+Most of these locations were within the US, particularly in cities, such as San Francisco, Seattle, Kansas City, San Antonio, and Jacksonville.
+
+\subsection{Mail Server Preferences}
+
+After ranking the MX records of every \dotgov domain, where servers with the same preference level receive the same ranking, we can observe that the vast majority of records are ranked equally.
+Figure \ref{fig:preferenceus} shows domestic locations mapped by preference, with redder points indicating a more prefered server.
+This illustratively captures the fact that most domains are given very high rankings, with only a very small number of government domains creating a wide range of preferences.
+
+This trend continues when considering the entire globe, with foreign and domestic locations not having a significant difference in preference levels, and across different levels of government.
+
+\begin{figure}
+\label{fig:preferenceus}
+\noindent\includegraphics[width=0.5\textwidth]{Summary/US Preference.png}
+\caption{Mail Server Preference Rankings}
+\end{figure}
 
 \subsection{Mail Server Centralization}
 
@@ -185,6 +216,44 @@ We created a CDF of the number of physical locations a single \dotgov domain has
 We see that 11\% of \dotgov domains were mapped to a single physical server, while the remaining 88\% map to at least 2 physical locations.
 We also see that the most prevalent number of locations used is 4 locations, followed by 7 locations.
 This shows that most \dotgov domains have redundant systems, which is good for reliability.
+
+\begin{figure}
+\label{fig:locationcdf}
+\noindent\includegraphics[width=0.5\textwidth]{Summary/Location Count CDF.png}
+\caption{CDF of Unqiue Mail Server Locations}
+\end{figure}
+
+\begin{figure}
+\label{fig:asncdf}
+\noindent\includegraphics[width=0.5\textwidth]{Summary/ASN Count CDF.png}
+\caption{CDF of Unqiue Mail Server AS Number}
+\end{figure}
+
+\subsection{Third Party Mail Servers}
+
+Even using our simplified domain name analysis, we are able to classify approximately 89\% of mail server domains as either First or Third party.
+And as can be seen in Figure \ref{fig:thirdpartysummary}, 85\% of domains are detected as thrid party, and only 4.5\% are able to be classified as first party.
+With the remaining 10.5\% being unknown.
+
+\begin{figure}
+\label{fig:thirdpartysummary}
+\noindent\includegraphics[width=0.5\textwidth]{Summary/Third Party Exchanges.png}
+\caption{First, Third, and Unknown Party Mail Server Counts}
+\end{figure}
+
+Seeing the distribution of these third party locations on the globe in Figure \ref{fig:thirdpartyglobe}, we can see that every mail domain which we can confidently classify as first party, is located within the borders of the United States.
+And many of the foreign locations we discovered we can confidently conclude are third party servers, being hosted in data centers owned by companies such as Microsoft, Google, and Amazon.
+
+\begin{figure}
+\label{fig:thirdpartyglobe}
+\noindent\includegraphics[width=0.5\textwidth]{Summary/Globe Third Party.png}
+\caption{First and Third Party Mail Server Locations}
+\end{figure}
+
+This lines up with our previous observation that foreign locations are mostly hosted by lower levels of government, at the city, county, and state level, and much less common for federal branches.
+We find that 89\% of city, 85\% of county, and 84\% of state mail servers are third party hosted.
+Whereas only 31\% of federal legistative 64\% of federal judicial, and 56\% of federal executive servers are third party.
+This captures sharply different practices between the upper and lower levels of the US government when it comes to managing server infrastructure.
 
 \section{Limitations}
 
@@ -209,6 +278,12 @@ As technology and the Internet continues to evolve and change, it is vital to co
 
 \section{Conclusion}
 
+In this paper, we analyzed the physical trustworthiness of government mail servers by identifying the geolocation of the servers as well as seeing if the physical server belonged to a third party.
+By geolocating the IPs of the mail servers, we found that the servers used were very physically redundant, with 69\% of domains being hosted in 2 or more locations.
+Notably, 85\% of mail servers belonged to 2 or less ASes, which impacts AS level redundancy of mail servers.
+We also found that there were foreign mail servers as well, all of which belonged to state level government services.
+By analyzing the third-party usage of mail servers, we found extensive usage of third party resources, particularly in foreign countries.
+Finally, we outlined the procedures we followed to get reliable results, with source code available in a public Github repository in the references below.
 
 \bibliographystyle{abbrv} 
 \begin{small}
