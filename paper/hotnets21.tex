@@ -212,10 +212,15 @@ This trend continues when considering the entire globe, with foreign and domesti
 
 \subsection{Mail Server Centralization}
 
-We created a CDF of the number of physical locations a single \dotgov domain has listed as a mail exchange.
-We see that 11\% of \dotgov domains were mapped to a single physical server, while the remaining 88\% map to at least 2 physical locations.
-We also see that the most prevalent number of locations used is 4 locations, followed by 7 locations.
-This shows that most \dotgov domains have redundant systems, which is good for reliability.
+\subsubsection{Mail Server Redundancy}
+
+We created a CDF of the number of physical locations for mail servers associated with a \dotgov domain.
+This helps indicate the level of redundancy of mail servers better than simply counting the number of server addresses, because first, a single server can have multiple interfaces with differing IP addresses, which means that counting IP's does not actually indicate the number of physical machines.
+And in addition to this, there is an economic incentive to co-locate servers togther in data centers.
+This co-location can reduce the actual levels of redundancy, because if all of a domains mail servers are located within the same region, an fault at the data center or even the AS level could completely cut off a domain from email services.
+
+Figure \ref{fig:locationcdf} is a CDF of the number of unique locations which correspond to a single government domain. This shows us that about 35\% of domains have only a single physical location which is responsible for handling all email to that domain.
+And about 50\% of domains having 3 or more unqiue locations serving them, with a maximum of 7 locations serving any single domain.
 
 \begin{figure}
 \label{fig:locationcdf}
@@ -223,10 +228,32 @@ This shows that most \dotgov domains have redundant systems, which is good for r
 \caption{CDF of Unqiue Mail Server Locations}
 \end{figure}
 
+This shows that the majority of domains have servers located separately, though the 35\% of domains with only a single location is still a significant portion without any redundancy in terms of location.
+
+At the AS level though we see a very different story, Figure \ref{fig:asncdf} shows us that 88\% of domains have all mail servers supporting them located within a single autonomous system.
+Meaning that a single AS outage could completely disrupt the email system of an entire division of the US government.
+
 \begin{figure}
 \label{fig:asncdf}
 \noindent\includegraphics[width=0.5\textwidth]{Summary/ASN Count CDF.png}
 \caption{CDF of Unqiue Mail Server AS Number}
+\end{figure}
+
+\subsubsection{Mail Server Importance}
+
+Next in our examination of the centralization of government mail servers, we consider the importance of a single mail server to the overall email infrastructure of the US government.
+E.g. if a single mail server is disrupted, how many \dotgov domains will be affected, and how many domains is the average mail server responsible for?
+
+To investigate this for each mail server IP which we see, we count the number of \dotgov domains which list an MX record which can be resolved to this IP.
+This plot can be found in Figure \ref{fig:domainsperms}.
+Overall, we can see that the vast majority of mail servers only support a single \dotgov domain, with a trailing distribution of servers supporting up to 60 domains. 
+
+We can also see in this plot that there exist a small number of mail servers which are responsible for a significant portion of \dotgov domains, each being responsible for between 200 and 300 domains in total.
+
+\begin{figure}
+\label{fig:domainsperms}
+\noindent\includegraphics[width=0.5\textwidth]{Summary/Domains Per Exchange IP.png}
+\caption{Number of \dotgov Domains Served by a Single Mail Server}
 \end{figure}
 
 \subsection{Third Party Mail Servers}
